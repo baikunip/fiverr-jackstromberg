@@ -14,11 +14,34 @@
             <div id="map"></div>
         </div>
         <div class="col-md-2">
-            <div class="card">Side Bar</div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h5 class="text mt-3">Layers Control</h5>
+                    <hr>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="" id="all-layer-check">
+                        <label class="form-check-label" for="all-layer-check">
+                          All Layers
+                        </label>
+                      </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="form-check mx-3">
+                        <input class="form-check-input" type="checkbox" value="" id="points-layer-check">
+                        <label class="form-check-label" for="points-layer-check">
+                          Points
+                        </label>
+                      </div>
+                </div>
+            </div>
         </div>
     </div>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
     <script src="data/points.js"></script>
     <script src="main.js"></script>
 </body>
