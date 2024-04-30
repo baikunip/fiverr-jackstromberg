@@ -40,17 +40,9 @@ function addLayer(layer,type,source,style,title){
         'id': layer,
         'type': type,
         'source': source,
-        'layout': style
+        'layout': style[0],
+        'paint':style[1]
     })
-    // {
-    //     'icon-image': 'custom-marker',
-    //     'text-font': [
-    //         'Open Sans Semibold',
-    //         'Arial Unicode MS Bold'
-    //     ],
-    //     'text-offset': [0, 1.25],
-    //     'text-anchor': 'top'
-    // }
     // When a click event occurs on a feature in the places layer, open a popup at the
     // location of the feature, with description HTML from its properties.
     map.on('click', layer, (e) => {
@@ -77,11 +69,6 @@ function addLayer(layer,type,source,style,title){
     map.on('mouseleave', layer, () => {
         map.getCanvas().style.cursor = '';
     });
-    // console.log(map.getSource(source)._data)
-    map.fitBounds(turf.bbox(map.getSource(source)._data))
-}
-function removeLayer(layer){
-    map.removeLayer(layer)
 }
 map.on('load', async () => {
     // Add an image to use as a custom marker
@@ -92,10 +79,18 @@ map.on('load', async () => {
         'type': 'geojson',
         'data': points
     })
+    map.addSource('lines', {
+        'type': 'geojson',
+        'data': lines
+    })
+    map.addSource('areas', {
+        'type': 'geojson',
+        'data': areas
+    })
     // layers
     $('#points-layer-check').on('change', ()=>{
         if ($('#points-layer-check').prop('checked')) {
-            addLayer('conferences','symbol','points',{
+            addLayer('conferences','symbol','points',[{
                 'icon-image': 'custom-marker',
                 'text-font': [
                     'Open Sans Semibold',
@@ -103,9 +98,72 @@ map.on('load', async () => {
                 ],
                 'text-offset': [0, 1.25],
                 'text-anchor': 'top'
-            },'layer')
+            },{}],'layer')
+            map.fitBounds(turf.bbox(map.getSource('points')._data))
         }else{
             if (map.getLayer('conferences')) map.removeLayer('conferences')
         }
-   })  
+   }) 
+   $('#lines-layer-check').on('change', ()=>{   
+        if ($('#lines-layer-check').prop('checked')) {
+            addLayer('lines','line','lines',[{
+                'line-join': 'round',
+                'line-cap': 'round'
+            },{
+                'line-color': '#888',
+                'line-width': 8
+            }],'layer')
+            map.fitBounds(turf.bbox(map.getSource('lines')._data))
+        }else{
+            if (map.getLayer('lines')) map.removeLayer('lines')
+        }
+    })  
+    $('#areas-layer-check').on('change', ()=>{   
+        if ($('#areas-layer-check').prop('checked')) {
+            addLayer('areas','fill','areas',[{},{
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }],'layer')
+            map.fitBounds(turf.bbox(map.getSource('areas')._data))
+        }else{
+            if (map.getLayer('areas')) map.removeLayer('areas')
+        }
+    })
+    $('#all-layer-check').on('change', ()=>{   
+        if ($('#all-layer-check').prop('checked')) {
+            if (map.getLayer('areas')) map.removeLayer('areas')
+            addLayer('areas','fill','areas',[{},{
+                'fill-color': '#088',
+                'fill-opacity': 0.8
+            }],'layer')
+            $('#areas-layer-check').prop('checked', true)
+            if (map.getLayer('lines')) map.removeLayer('lines')
+            addLayer('lines','line','lines',[{
+                'line-join': 'round',
+                'line-cap': 'round'
+            },{
+                'line-color': '#888',
+                'line-width': 8
+            }],'layer')
+            $('#lines-layer-check').prop('checked', true)
+            if (map.getLayer('conferences')) map.removeLayer('conferences')
+            addLayer('conferences','symbol','points',[{
+                'icon-image': 'custom-marker',
+                'text-font': [
+                    'Open Sans Semibold',
+                    'Arial Unicode MS Bold'
+                ],
+                'text-offset': [0, 1.25],
+                'text-anchor': 'top'
+            },{}],'layer')
+            $('#points-layer-check').prop('checked', true)
+        }else{
+            if (map.getLayer('areas')) map.removeLayer('areas')
+            $('#areas-layer-check').prop('checked', false)
+            if (map.getLayer('lines')) map.removeLayer('lines')
+            $('#lines-layer-check').prop('checked', false)
+            if (map.getLayer('conferences')) map.removeLayer('conferences')
+            $('#points-layer-check').prop('checked', false)
+        }
+    }) 
 })
