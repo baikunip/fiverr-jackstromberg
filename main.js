@@ -34,6 +34,14 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
+let areasType=['match',["get", "layer"]]
+areas.features.forEach(element => {
+    if(!areasType.includes(element['properties']['layer'])){
+        areasType.push(element['properties']['layer'])
+        areasType.push('hsla(' + (Math.floor(Math.random()*360) + ', 100%, 70%, 1)'))
+    }
+});
+areasType.push('#ccc')
 function addLayer(layer,type,source,style,title){
     // Add a symbol layer
     map.addLayer({
@@ -70,6 +78,62 @@ function addLayer(layer,type,source,style,title){
         map.getCanvas().style.cursor = '';
     });
 }
+function drawPoint(){
+    map.getCanvas().style.cursor='crosshair'
+    map.once('click',(e)=>{
+        let coord=e.lngLat
+        map.getSource('origin').setData({
+            "type": "FeatureCollection",
+            "features": [{ "type": "Feature","geometry": { "type": "Point", "coordinates": [ coord['lng'], coord["lat"] ] }}]
+        })
+        map.getCanvas().style.cursor='hand'
+    })
+}
+const geocoderApi = {
+    forwardGeocode: async (config) => {
+        const features = [];
+        try {
+            const request =
+        `https://nominatim.openstreetmap.org/search?q=${
+            config.query
+        }&format=geojson&polygon_geojson=1&addressdetails=1`;
+            const response = await fetch(request);
+            const geojson = await response.json();
+            for (const feature of geojson.features) {
+                const center = [
+                    feature.bbox[0] +
+                (feature.bbox[2] - feature.bbox[0]) / 2,
+                    feature.bbox[1] +
+                (feature.bbox[3] - feature.bbox[1]) / 2
+                ];
+                const point = {
+                    type: 'Feature',
+                    geometry: {
+                        type: 'Point',
+                        coordinates: center
+                    },
+                    place_name: feature.properties.display_name,
+                    properties: feature.properties,
+                    text: feature.properties.display_name,
+                    place_type: ['place'],
+                    center
+                };
+                features.push(point);
+            }
+        } catch (e) {
+            console.error(`Failed to forwardGeocode with error: ${e}`);
+        }
+
+        return {
+            features
+        };
+    }
+};
+map.addControl(
+    new MaplibreGeocoder(geocoderApi, {
+        maplibregl
+    })
+);
 map.on('load', async () => {
     // Add an image to use as a custom marker
     const image = await map.loadImage('https://maplibre.org/maplibre-gl-js/docs/assets/osgeo-logo.png');
@@ -87,7 +151,23 @@ map.on('load', async () => {
         'type': 'geojson',
         'data': areas
     })
+    map.addSource('origin',{
+        'type':'geojson',
+        'data':{
+            "type": "FeatureCollection",
+            "features": []
+        }
+    })
     // layers
+    map.addLayer({
+        'id': 'origin',
+        'type': 'circle',
+        'source': 'origin',
+        'paint':{
+            'circle-radius': 6,
+            'circle-color': '#B42222'
+        },
+    })
     $('#points-layer-check').on('change', ()=>{
         if ($('#points-layer-check').prop('checked')) {
             addLayer('conferences','symbol','points',[{
@@ -110,7 +190,7 @@ map.on('load', async () => {
                 'line-join': 'round',
                 'line-cap': 'round'
             },{
-                'line-color': '#888',
+                'line-color': '#088',
                 'line-width': 8
             }],'layer')
             map.fitBounds(turf.bbox(map.getSource('lines')._data))
@@ -121,7 +201,7 @@ map.on('load', async () => {
     $('#areas-layer-check').on('change', ()=>{   
         if ($('#areas-layer-check').prop('checked')) {
             addLayer('areas','fill','areas',[{},{
-                'fill-color': '#088',
+                'fill-color': areasType,
                 'fill-opacity': 0.8
             }],'layer')
             map.fitBounds(turf.bbox(map.getSource('areas')._data))
@@ -133,7 +213,7 @@ map.on('load', async () => {
         if ($('#all-layer-check').prop('checked')) {
             if (map.getLayer('areas')) map.removeLayer('areas')
             addLayer('areas','fill','areas',[{},{
-                'fill-color': '#088',
+                'fill-color': areasType,
                 'fill-opacity': 0.8
             }],'layer')
             $('#areas-layer-check').prop('checked', true)
@@ -142,7 +222,7 @@ map.on('load', async () => {
                 'line-join': 'round',
                 'line-cap': 'round'
             },{
-                'line-color': '#888',
+                'line-color': linesType,
                 'line-width': 8
             }],'layer')
             $('#lines-layer-check').prop('checked', true)

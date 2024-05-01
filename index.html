@@ -5,59 +5,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css">
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.2.0/dist/maplibre-gl-geocoder.css"
+        type="text/css"
+    />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="row no-gutters">
-        <div class="col-md-10">
+        <div class="col-md-9">
             <div id="map"></div>
         </div>
-        <div class="col-md-2">
-            <div class="row">
-                <div class="col-md-12">
-                    <h5 class="text mt-3">Layers Control</h5>
-                    <hr>
-                </div>
-                <div class="col-md-12">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" id="all-layer-check">
-                        <label class="form-check-label" for="all-layer-check">
-                          All Layers
-                        </label>
+          <div class="accordion col-md-3" id="accordionExample">
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                  Layers Control
+                </button>
+              </h2>
+              <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <div class="row">
+                      <div class="col-md-12">
+                          <div class="form-check">
+                              <input class="form-check-input" type="checkbox" value="" id="all-layer-check">
+                              <label class="form-check-label" for="all-layer-check">
+                                All Layers
+                              </label>
+                            </div>
                       </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="form-check mx-3">
-                        <input class="form-check-input" type="checkbox" value="" id="points-layer-check">
-                        <label class="form-check-label" for="points-layer-check">
-                          Points
-                        </label>
+                      <div class="col-md-12">
+                          <div class="form-check mx-3">
+                              <input class="form-check-input" type="checkbox" value="" id="points-layer-check">
+                              <label class="form-check-label" for="points-layer-check">
+                                Points
+                              </label>
+                            </div>
                       </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="form-check mx-3">
-                        <input class="form-check-input" type="checkbox" value="" id="lines-layer-check">
-                        <label class="form-check-label" for="lines-layer-check">
-                          Lines
-                        </label>
+                      <div class="col-md-12">
+                          <div class="form-check mx-3">
+                              <input class="form-check-input" type="checkbox" value="" id="lines-layer-check">
+                              <label class="form-check-label" for="lines-layer-check">
+                                Lines
+                              </label>
+                            </div>
                       </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="form-check mx-3">
-                        <input class="form-check-input" type="checkbox" value="" id="areas-layer-check">
-                        <label class="form-check-label" for="areas-layer-check">
-                          Areas
-                        </label>
+                      <div class="col-md-12">
+                          <div class="form-check mx-3">
+                              <input class="form-check-input" type="checkbox" value="" id="areas-layer-check">
+                              <label class="form-check-label" for="areas-layer-check">
+                                Areas
+                              </label>
+                            </div>
                       </div>
+                  </div>  
                 </div>
+              </div>
             </div>
-        </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                  Directions
+                </button>
+              </h2>
+              <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  <form>
+                    <div class="mb-3">
+                      <label for="exampleInputEmail1" class="form-label">Origin</label>
+                      <div class="row">
+                        <div class="col-md-2">
+                          <button type="button" id="activate-draw-origin" onclick="drawPoint()" class="btn btn-sm"><i class="bi bi-geo-alt"></i></button>
+                        </div>
+                        <div class="col-md-10">
+                          <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label for="exampleInputPassword1" class="form-label">Destination</label>
+                      <div class="row">
+                        <div class="col-md-2">
+                          <button type="button" class="btn btn-sm"><i class="bi bi-geo-alt"></i></button>
+                        </div>
+                        <div class="col-md-10">
+                          <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                        </div>
+                      </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                      <button type="button" class="btn btn-block btn-primary">Get Direction</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <div class="accordion-item">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                  Accordion Item #3
+                </button>
+              </h2>
+              <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                  <strong>This is the third item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                </div>
+              </div>
+            </div>
+          </div>
+        
     </div>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
     <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-geocoder@1.2.0/dist/maplibre-gl-geocoder.min.js"></script>
     <script src="data/points.js"></script>
     <script src="data/lines.js"></script>
     <script src="data/areas.js"></script>

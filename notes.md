@@ -13,7 +13,9 @@ Requirements:
 -ability to search the list of features from the geojson file 
 -ability to show my current position (GPS) on the map 
 -ability to show directions from my current position to a selected point of interest
--ability to show directions from a manually entered address to a selected point of interest -All source code to be provided (html, javascript, etc) upon project completion -Work should be branding free (excluding required copyrights such as openstreetmaps)  
+-ability to show directions from a manually entered address to a selected point of interest 
+-All source code to be provided (html, javascript, etc) upon project completion 
+-Work should be branding free (excluding required copyrights such as openstreetmaps)  
 
 Out of scope: 
 - Integration into my live website; database configuration, etc. I would be responsible for taking the project forward and integrating it into my current solution.
