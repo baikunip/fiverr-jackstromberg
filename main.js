@@ -78,17 +78,33 @@ function addLayer(layer,type,source,style,title){
         map.getCanvas().style.cursor = '';
     });
 }
-function drawPoint(){
+function drawPoint(source){
     map.getCanvas().style.cursor='crosshair'
     map.once('click',(e)=>{
         let coord=e.lngLat
-        map.getSource('origin').setData({
+        map.getSource(source).setData({
             "type": "FeatureCollection",
             "features": [{ "type": "Feature","geometry": { "type": "Point", "coordinates": [ coord['lng'], coord["lat"] ] }}]
         })
         map.getCanvas().style.cursor='hand'
     })
+    $('#draw-container-'+source).empty()
+    $('#draw-container-'+source).append(
+        `<button type="button" id="clear-draw-`+source+`" onclick="clearPoint('`+source+`')" class="btn btn-sm btn-outline btn-danger"><i class="bi bi-trash-fill"></i></button>`
+    )
 }
+function clearPoint(source){
+    map.getSource(source).setData({
+        "type": "FeatureCollection",
+        "features": []
+    })
+    map.getCanvas().style.cursor='hand'
+    $('#draw-container-'+source).empty()
+    $('#draw-container-'+source).append(
+        `<button type="button" id="activate-draw-`+source+`" onclick="drawPoint('`+source+`')" class="btn btn-sm"><i class="bi bi-geo-alt"></i></button>`
+    )
+}
+
 const geocoderApi = {
     forwardGeocode: async (config) => {
         const features = [];
