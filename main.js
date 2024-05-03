@@ -34,6 +34,15 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
+// Add geolocate control to the map.
+map.addControl(
+    new maplibregl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    })
+)
 let areasType=['match',["get", "layer"]],
 emptyjson={
     "type": "FeatureCollection",
@@ -109,10 +118,11 @@ function clearPoint(source){
 }
 function showRoute(){
     let org=$('#coordinate-origin').val(),
-    dest=$('#coordinate-destination').val().split(', ')
+    dest=$('#coordinate-destination').val().split(', '),
+    travelmode=$('#travel-mode').val()
     $.ajax({
         method:'GET',
-        url:'https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start='+org+'&end='+dest,
+        url:'https://api.openrouteservice.org/v2/directions/'+travelmode+'?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start='+org+'&end='+dest,
         success:(data)=>{
             console.log(data)
             map.getSource('routes').setData(data)
@@ -129,7 +139,7 @@ function showRoute(){
 function clearRoute(){
     map.getSource('routes').setData(emptyjson)
     $('#routing-container').empty().append(
-        `<button type="button" class="btn btn-block btn-primary" onclick="showRoute()">Clear Direction</button>`
+        `<button type="button" class="btn btn-block btn-primary" onclick="showRoute()">Get Direction</button>`
     )
 }
 const geocoderApi = {
