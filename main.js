@@ -34,9 +34,7 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
-console.log(maplibremaplibreGlDirections)
-let areasType=['match',["get", "layer"]],
-directions = new MapLibreGlDirections('map')
+let areasType=['match',["get", "layer"]]
 areas.features.forEach(element => {
     if(!areasType.includes(element['properties']['layer'])){
         areasType.push(element['properties']['layer'])
@@ -111,10 +109,10 @@ function clearPoint(source){
 function showRoute(){
     let org=$('#coordinate-origin').val().split(', '),
     dest=$('#coordinate-destination').val().split(', ')
-    directions.setWaypoints([
-        [parseFloat(org[0]), parseFloat(org[1])],
-        [parseFloat(dest[0]), parseFloat(dest[1])],
-    ])
+    // directions.setWaypoints([
+    //     [parseFloat(org[0]), parseFloat(org[1])],
+    //     [parseFloat(dest[0]), parseFloat(dest[1])],
+    // ])
   }
 const geocoderApi = {
     forwardGeocode: async (config) => {
