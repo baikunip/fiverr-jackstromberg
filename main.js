@@ -34,7 +34,9 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
-let areasType=['match',["get", "layer"]]
+console.log(maplibremaplibreGlDirections)
+let areasType=['match',["get", "layer"]],
+directions = new MapLibreGlDirections('map')
 areas.features.forEach(element => {
     if(!areasType.includes(element['properties']['layer'])){
         areasType.push(element['properties']['layer'])
@@ -87,6 +89,7 @@ function drawPoint(source){
             "features": [{ "type": "Feature","geometry": { "type": "Point", "coordinates": [ coord['lng'], coord["lat"] ] }}]
         })
         map.getCanvas().style.cursor='hand'
+        $('#coordinate-'+source).val(coord['lng']+', '+coord["lat"])
     })
     $('#draw-container-'+source).empty()
     $('#draw-container-'+source).append(
@@ -103,8 +106,16 @@ function clearPoint(source){
     $('#draw-container-'+source).append(
         `<button type="button" id="activate-draw-`+source+`" onclick="drawPoint('`+source+`')" class="btn btn-sm"><i class="bi bi-geo-alt"></i></button>`
     )
+    $('#coordinate-'+source).val('')
 }
-
+function showRoute(){
+    let org=$('#coordinate-origin').val().split(', '),
+    dest=$('#coordinate-destination').val().split(', ')
+    directions.setWaypoints([
+        [parseFloat(org[0]), parseFloat(org[1])],
+        [parseFloat(dest[0]), parseFloat(dest[1])],
+    ])
+  }
 const geocoderApi = {
     forwardGeocode: async (config) => {
         const features = [];
@@ -174,6 +185,13 @@ map.on('load', async () => {
             "features": []
         }
     })
+    map.addSource('destination',{
+        'type':'geojson',
+        'data':{
+            "type": "FeatureCollection",
+            "features": []
+        }
+    })
     // layers
     map.addLayer({
         'id': 'origin',
@@ -182,6 +200,15 @@ map.on('load', async () => {
         'paint':{
             'circle-radius': 6,
             'circle-color': '#B42222'
+        },
+    })
+    map.addLayer({
+        'id': 'destination',
+        'type': 'circle',
+        'source': 'destination',
+        'paint':{
+            'circle-radius': 6,
+            'circle-color': '#2F4858'
         },
     })
     $('#points-layer-check').on('change', ()=>{
