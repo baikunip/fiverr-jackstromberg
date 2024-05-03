@@ -34,7 +34,11 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
-let areasType=['match',["get", "layer"]]
+let areasType=['match',["get", "layer"]],
+emptyjson={
+    "type": "FeatureCollection",
+    "features": []
+}
 areas.features.forEach(element => {
     if(!areasType.includes(element['properties']['layer'])){
         areasType.push(element['properties']['layer'])
@@ -87,7 +91,7 @@ function drawPoint(source){
             "features": [{ "type": "Feature","geometry": { "type": "Point", "coordinates": [ coord['lng'], coord["lat"] ] }}]
         })
         map.getCanvas().style.cursor='hand'
-        $('#coordinate-'+source).val(coord['lng']+', '+coord["lat"])
+        $('#coordinate-'+source).val(coord['lng']+','+coord["lat"])
     })
     $('#draw-container-'+source).empty()
     $('#draw-container-'+source).append(
@@ -95,10 +99,7 @@ function drawPoint(source){
     )
 }
 function clearPoint(source){
-    map.getSource(source).setData({
-        "type": "FeatureCollection",
-        "features": []
-    })
+    map.getSource(source).setData(emptyjson)
     map.getCanvas().style.cursor='hand'
     $('#draw-container-'+source).empty()
     $('#draw-container-'+source).append(
@@ -107,13 +108,30 @@ function clearPoint(source){
     $('#coordinate-'+source).val('')
 }
 function showRoute(){
-    let org=$('#coordinate-origin').val().split(', '),
+    let org=$('#coordinate-origin').val(),
     dest=$('#coordinate-destination').val().split(', ')
-    // directions.setWaypoints([
-    //     [parseFloat(org[0]), parseFloat(org[1])],
-    //     [parseFloat(dest[0]), parseFloat(dest[1])],
-    // ])
-  }
+    $.ajax({
+        method:'GET',
+        url:'https://api.openrouteservice.org/v2/directions/driving-car?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start='+org+'&end='+dest,
+        success:(data)=>{
+            console.log(data)
+            map.getSource('routes').setData(data)
+            map.fitBounds(turf.bbox(map.getSource('routes')._data))
+            $('#routing-container').empty().append(
+                `<button type="button" class="btn btn-block btn-danger" onclick="clearRoute()">Clear Direction</button>`
+            )
+        },
+        error:()=>{
+            map.getSource('routes').setData(emptyjson)
+        }
+    })
+}
+function clearRoute(){
+    map.getSource('routes').setData(emptyjson)
+    $('#routing-container').empty().append(
+        `<button type="button" class="btn btn-block btn-primary" onclick="showRoute()">Clear Direction</button>`
+    )
+}
 const geocoderApi = {
     forwardGeocode: async (config) => {
         const features = [];
@@ -178,17 +196,15 @@ map.on('load', async () => {
     })
     map.addSource('origin',{
         'type':'geojson',
-        'data':{
-            "type": "FeatureCollection",
-            "features": []
-        }
+        'data':emptyjson
     })
     map.addSource('destination',{
         'type':'geojson',
-        'data':{
-            "type": "FeatureCollection",
-            "features": []
-        }
+        'data':emptyjson
+    })
+    map.addSource('routes',{
+        'type':'geojson',
+        'data':emptyjson
     })
     // layers
     map.addLayer({
@@ -207,6 +223,19 @@ map.on('load', async () => {
         'paint':{
             'circle-radius': 6,
             'circle-color': '#2F4858'
+        },
+    })
+    map.addLayer({
+        'id': 'routes',
+        'type': 'line',
+        'source': 'routes',
+        'layout':{
+            'line-join': 'round',
+            'line-cap': 'round'
+        },
+        'paint':{
+            'line-color': 'red',
+            'line-width': 4
         },
     })
     $('#points-layer-check').on('change', ()=>{
