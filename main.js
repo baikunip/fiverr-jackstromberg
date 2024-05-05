@@ -34,15 +34,7 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
-// Add geolocate control to the map.
-map.addControl(
-    new maplibregl.GeolocateControl({
-        positionOptions: {
-            enableHighAccuracy: true
-        },
-        trackUserLocation: true
-    })
-)
+
 let areasType=['match',["get", "layer"]],
 emptyjson={
     "type": "FeatureCollection",
@@ -187,6 +179,17 @@ map.addControl(
         maplibregl
     })
 );
+map.addControl(
+    new maplibregl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        trackUserLocation: true
+    })
+)
+function showSideBar(){
+    if($('#side-bar'))
+}
 map.on('load', async () => {
     // Add an image to use as a custom marker
     const image = await map.loadImage('https://maplibre.org/maplibre-gl-js/docs/assets/osgeo-logo.png');

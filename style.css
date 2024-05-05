@@ -6,3 +6,23 @@
     max-width: 400px;
     font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
 }
+#show-side-bar{display:none;}
+@media only screen and (max-width : 768px){
+    #show-side-bar{
+        display:block;
+        position:absolute;
+        z-index:9;
+        top:6.4em;
+        right:.5em;
+        background-color: rgb(244, 244, 244);
+        width:33px;
+        height:29px;
+        padding:0;
+        border-radius: 5px!important;
+        border-width: 2px;
+        border-color: rgba(155, 155, 155, 0.5);
+    }
+    #map{
+        height:50vh;
+    }
+}
