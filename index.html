@@ -17,14 +17,24 @@
 </head>
 <body>
     <div class="row no-gutters">
-        <div class="col-md-9">
+        <div class="col-md-9" style="padding:0;">
             <div id="map">
-              <button class="btn" type="button" id="show-side-bar">
+              <button class="btn" type="button" id="show-side-bar" onclick="showSideBar()">
                 <i class="bi bi-list"></i>
               </button>
             </div>
         </div>
-        <div class="accordion col-md-3" id="side-bar">
+        <div class="accordion col-md-3" style="padding:0;" id="side-bar">
+            <div id="close-side-bar-container">
+              <button type="button" class="btn" id="close-side-bar" onclick="hideSideBar()">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div id="title-container" class="container">
+              <hr>
+                <h3 style="margin-left:12px;">Map Title</h3>
+              <hr>
+            </div>
             <div class="accordion-item">
               <h2 class="accordion-header">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">

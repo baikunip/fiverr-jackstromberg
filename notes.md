@@ -2,7 +2,7 @@ Requirements:
 -Maps should leverage OpenStreetMap OK
 -Support loading of data via geoJSON  OK
 -Render Polygons, Points, and linestrings OK
--Support colors, labels, and descriptions for each feature 
+-Support colors, labels, and descriptions for each feature OK
 -Reactive design to display the map properly on both desktop and mobile devices OK
 -End user should be able to click on a point, polygon, or linestring and see a popup that has the description 
 -End user should be able to zoom in/out/pan on the map OK

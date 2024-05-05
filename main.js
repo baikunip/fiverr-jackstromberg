@@ -188,7 +188,14 @@ map.addControl(
     })
 )
 function showSideBar(){
-    if($('#side-bar'))
+    $('#map').css("height","50vh")
+    $('#side-bar').css("height","50vh")
+    $('#show-side-bar').hide()
+}
+function hideSideBar(){
+    $('#map').css("height","100vh")
+    $('#side-bar').css("height","0vh")
+    $('#show-side-bar').show()
 }
 map.on('load', async () => {
     // Add an image to use as a custom marker
