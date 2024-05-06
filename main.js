@@ -48,6 +48,12 @@ areas.features.forEach(element => {
         areasType.push('hsla(' + (Math.floor(Math.random()*360) + ', 100%, 70%, 1)'))
     }
 });
+lines.features.forEach(element => {
+    if(!areasType.includes(element['properties']['layer'])){
+        areasType.push(element['properties']['layer'])
+        areasType.push('hsla(' + (Math.floor(Math.random()*360) + ', 100%, 70%, 1)'))
+    }
+});
 areasType.push('#ccc')
 function addLayer(layer,type,source,style,title){
     // Add a symbol layer
