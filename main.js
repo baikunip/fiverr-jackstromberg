@@ -35,7 +35,7 @@ let map = new maplibregl.Map({
         zoom: 14 // starting zoom
     });
 
-let areasType=['match',["get", "layer"]],
+let areasType=['match',["get", "layer"]],linesType=['match',["get", "layer"]]
 emptyjson={
     "type": "FeatureCollection",
     "features": []
@@ -49,9 +49,9 @@ areas.features.forEach(element => {
     }
 });
 lines.features.forEach(element => {
-    if(!areasType.includes(element['properties']['layer'])){
-        areasType.push(element['properties']['layer'])
-        areasType.push('hsla(' + (Math.floor(Math.random()*360) + ', 100%, 70%, 1)'))
+    if(!linesType.includes(element['properties']['layer'])){
+        linesType.push(element['properties']['layer'])
+        linesType.push('hsla(' + (Math.floor(Math.random()*360) + ', 100%, 70%, 1)'))
     }
 });
 areasType.push('#ccc')
