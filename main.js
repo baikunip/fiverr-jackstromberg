@@ -39,7 +39,9 @@ let areasType=['match',["get", "layer"]],
 emptyjson={
     "type": "FeatureCollection",
     "features": []
-}
+},
+activeLayers={},
+featureList=[]
 areas.features.forEach(element => {
     if(!areasType.includes(element['properties']['layer'])){
         areasType.push(element['properties']['layer'])
@@ -56,6 +58,9 @@ function addLayer(layer,type,source,style,title){
         'layout': style[0],
         'paint':style[1]
     })
+    activeLayers[layer]=map.getSource(source)._data['features']
+    console.log(activeLayers)
+    // console.log(map.getSource(source)._options.data['features'])
     // When a click event occurs on a feature in the places layer, open a popup at the
     // location of the feature, with description HTML from its properties.
     map.on('click', layer, (e) => {
@@ -116,7 +121,6 @@ function showRoute(){
         method:'GET',
         url:'https://api.openrouteservice.org/v2/directions/'+travelmode+'?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start='+org+'&end='+dest,
         success:(data)=>{
-            console.log(data)
             map.getSource('routes').setData(data)
             map.fitBounds(turf.bbox(map.getSource('routes')._data))
             $('#routing-container').empty().append(
@@ -197,6 +201,39 @@ function hideSideBar(){
     $('#side-bar').css("height","0vh")
     $('#show-side-bar').show()
 }
+$('#search-feature').focus(()=>{
+    let val=$('#search-feature').val(),
+    keys=Object.keys(activeLayers)
+    featureList=[]
+    $('#datalistOptions').empty()
+    keys.forEach(key => {
+        for (let index = 0; index < activeLayers[key].length; index++) {
+            const element = activeLayers[key][index];
+            if(element['properties']['layer'].includes(val)&&featureList.length<5)featureList.push(element)
+        }
+    }); 
+    if(featureList.length>0){
+        featureList.forEach(res => {
+            $('#datalistOptions').append(
+                `<option value="`+res['properties']['layer']+`">`
+            )
+        });     
+    }
+})
+function searchFeature(){
+    let val=$('#search-feature').val(),
+    keys=Object.keys(activeLayers)
+    keys.forEach(key => {
+        for (let index = 0; index < activeLayers[key].length; index++) {
+            const element = activeLayers[key][index];
+            if(element['properties']['layer']==val){
+                let searchedFeature=emptyjson
+                searchedFeature['features'].push(element)
+                map.fitBounds(turf.bbox(searchedFeature))
+            }
+        }
+    })
+}
 map.on('load', async () => {
     // Add an image to use as a custom marker
     const image = await map.loadImage('https://maplibre.org/maplibre-gl-js/docs/assets/osgeo-logo.png');
@@ -272,6 +309,7 @@ map.on('load', async () => {
             map.fitBounds(turf.bbox(map.getSource('points')._data))
         }else{
             if (map.getLayer('conferences')) map.removeLayer('conferences')
+            activeLayers['conferences']=[]
         }
    }) 
    $('#lines-layer-check').on('change', ()=>{   
@@ -286,6 +324,7 @@ map.on('load', async () => {
             map.fitBounds(turf.bbox(map.getSource('lines')._data))
         }else{
             if (map.getLayer('lines')) map.removeLayer('lines')
+            activeLayers['lines']=[]
         }
     })  
     $('#areas-layer-check').on('change', ()=>{   
@@ -297,6 +336,7 @@ map.on('load', async () => {
             map.fitBounds(turf.bbox(map.getSource('areas')._data))
         }else{
             if (map.getLayer('areas')) map.removeLayer('areas')
+            activeLayers['areas']=[]
         }
     })
     $('#all-layer-check').on('change', ()=>{   
@@ -330,10 +370,13 @@ map.on('load', async () => {
         }else{
             if (map.getLayer('areas')) map.removeLayer('areas')
             $('#areas-layer-check').prop('checked', false)
+            activeLayers['areas']=[]
             if (map.getLayer('lines')) map.removeLayer('lines')
             $('#lines-layer-check').prop('checked', false)
+            activeLayers['lines']=[]
             if (map.getLayer('conferences')) map.removeLayer('conferences')
             $('#points-layer-check').prop('checked', false)
+            activeLayers['conferences']=[]
         }
     }) 
 })
