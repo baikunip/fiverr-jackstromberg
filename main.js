@@ -55,6 +55,7 @@ lines.features.forEach(element => {
     }
 });
 areasType.push('#ccc')
+linesType.push('#ccc')
 function addLayer(layer,type,source,style,title){
     // Add a symbol layer
     map.addLayer({
@@ -324,7 +325,7 @@ map.on('load', async () => {
                 'line-join': 'round',
                 'line-cap': 'round'
             },{
-                'line-color': '#088',
+                'line-color': linesType,
                 'line-width': 8
             }],'layer')
             map.fitBounds(turf.bbox(map.getSource('lines')._data))
