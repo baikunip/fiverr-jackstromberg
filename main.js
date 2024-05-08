@@ -95,56 +95,93 @@ function addLayer(layer,type,source,style,title){
         map.getCanvas().style.cursor = '';
     });
 }
-function drawPoint(source){
-    map.getCanvas().style.cursor='crosshair'
-    map.once('click',(e)=>{
-        let coord=e.lngLat
+function drawPoint(source) {
+    map.getCanvas().style.cursor = 'crosshair';
+
+    const clickHandler = (e) => {
+        const coord = e.lngLat;
         map.getSource(source).setData({
             "type": "FeatureCollection",
-            "features": [{ "type": "Feature","geometry": { "type": "Point", "coordinates": [ coord['lng'], coord["lat"] ] }}]
+            "features": [{ "type": "Feature", "geometry": { "type": "Point", "coordinates": [coord.lng, coord.lat] } }]
+        });
+        map.getCanvas().style.cursor = 'hand';
+        document.querySelector('#coordinate-' + source).value = coord.lng + ',' + coord.lat;
+    };
+
+    map.once('click', clickHandler);
+
+    const drawContainer = document.querySelector('#draw-container-' + source);
+    drawContainer.innerHTML = '';
+    const clearButton = document.createElement('button');
+    clearButton.type = 'button';
+    clearButton.id = 'clear-draw-' + source;
+    clearButton.onclick = () => clearPoint(source);
+    clearButton.className = 'btn btn-sm btn-outline btn-danger';
+    clearButton.innerHTML = '<i class="bi bi-trash-fill"></i>';
+    drawContainer.appendChild(clearButton);
+}
+
+function clearPoint(source) {
+    map.getSource(source).setData(emptyjson);
+    map.getCanvas().style.cursor = 'hand';
+
+    const drawContainer = document.querySelector('#draw-container-' + source);
+    drawContainer.innerHTML = '';
+    const activateButton = document.createElement('button');
+    activateButton.type = 'button';
+    activateButton.id = 'activate-draw-' + source;
+    activateButton.onclick = () => drawPoint(source);
+    activateButton.className = 'btn btn-sm';
+    activateButton.innerHTML = '<i class="bi bi-geo-alt"></i>';
+    drawContainer.appendChild(activateButton);
+
+    document.querySelector('#coordinate-' + source).value = '';
+}
+
+function showRoute() {
+    const org = document.querySelector('#coordinate-origin').value;
+    const dest = document.querySelector('#coordinate-destination').value.split(', ');
+    const travelmode = document.querySelector('#travel-mode').value;
+
+    fetch(`https://api.openrouteservice.org/v2/directions/${travelmode}?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start=${org}&end=${dest.join(',')}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Request failed: ${response.statusText}`);
+            }
+            return response.json();
         })
-        map.getCanvas().style.cursor='hand'
-        $('#coordinate-'+source).val(coord['lng']+','+coord["lat"])
-    })
-    $('#draw-container-'+source).empty()
-    $('#draw-container-'+source).append(
-        `<button type="button" id="clear-draw-`+source+`" onclick="clearPoint('`+source+`')" class="btn btn-sm btn-outline btn-danger"><i class="bi bi-trash-fill"></i></button>`
-    )
+        .then(data => {
+            map.getSource('routes').setData(data);
+            map.fitBounds(turf.bbox(map.getSource('routes')._data));
+            const routingContainer = document.querySelector('#routing-container');
+            routingContainer.innerHTML = '';
+            const clearButton = document.createElement('button');
+            clearButton.type = 'button';
+            clearButton.className = 'btn btn-block btn-danger';
+            clearButton.textContent = 'Clear Direction';
+            clearButton.onclick = clearRoute;
+            routingContainer.appendChild(clearButton);
+        })
+        .catch(error => {
+            console.error('Error fetching route data:', error);
+            map.getSource('routes').setData(emptyjson);
+        });
 }
-function clearPoint(source){
-    map.getSource(source).setData(emptyjson)
-    map.getCanvas().style.cursor='hand'
-    $('#draw-container-'+source).empty()
-    $('#draw-container-'+source).append(
-        `<button type="button" id="activate-draw-`+source+`" onclick="drawPoint('`+source+`')" class="btn btn-sm"><i class="bi bi-geo-alt"></i></button>`
-    )
-    $('#coordinate-'+source).val('')
+
+
+function clearRoute() {
+    map.getSource('routes').setData(emptyjson);
+
+    const routingContainer = document.querySelector('#routing-container');
+    routingContainer.innerHTML = '';
+    const getDirectionButton = document.createElement('button');
+    getDirectionButton.type = 'button';
+    getDirectionButton.className = 'btn btn-block btn-primary';
+    getDirectionButton.innerHTML = 'Get Direction';
+    getDirectionButton.onclick = showRoute;
+    routingContainer.appendChild(getDirectionButton);
 }
-function showRoute(){
-    let org=$('#coordinate-origin').val(),
-    dest=$('#coordinate-destination').val().split(', '),
-    travelmode=$('#travel-mode').val()
-    $.ajax({
-        method:'GET',
-        url:'https://api.openrouteservice.org/v2/directions/'+travelmode+'?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start='+org+'&end='+dest,
-        success:(data)=>{
-            map.getSource('routes').setData(data)
-            map.fitBounds(turf.bbox(map.getSource('routes')._data))
-            $('#routing-container').empty().append(
-                `<button type="button" class="btn btn-block btn-danger" onclick="clearRoute()">Clear Direction</button>`
-            )
-        },
-        error:()=>{
-            map.getSource('routes').setData(emptyjson)
-        }
-    })
-}
-function clearRoute(){
-    map.getSource('routes').setData(emptyjson)
-    $('#routing-container').empty().append(
-        `<button type="button" class="btn btn-block btn-primary" onclick="showRoute()">Get Direction</button>`
-    )
-}
+
 const geocoderApi = {
     forwardGeocode: async (config) => {
         const features = [];
@@ -198,37 +235,46 @@ map.addControl(
         trackUserLocation: true
     })
 )
-function showSideBar(){
-    $('#map').css("height","50vh")
-    $('#side-bar').css("height","50vh")
-    $('#show-side-bar').hide()
+function showSideBar() {
+    document.getElementById('map').style.height = '50vh';
+    document.getElementById('side-bar').style.height = '50vh';
+    document.getElementById('show-side-bar').style.display = 'none';
 }
-function hideSideBar(){
-    $('#map').css("height","100vh")
-    $('#side-bar').css("height","0vh")
-    $('#show-side-bar').show()
+
+function hideSideBar() {
+    document.getElementById('map').style.height = '100vh';
+    document.getElementById('side-bar').style.height = '0vh';
+    document.getElementById('show-side-bar').style.display = 'block';
 }
-$('#search-feature').focus(()=>{
-    let val=$('#search-feature').val(),
-    keys=Object.keys(activeLayers)
-    featureList=[]
-    $('#datalistOptions').empty()
+
+document.querySelector('#search-feature').addEventListener('focus', () => {
+    const val = document.querySelector('#search-feature').value;
+    const keys = Object.keys(activeLayers);
+    const featureList = [];
+
+    const datalistOptions = document.querySelector('#datalistOptions');
+    datalistOptions.innerHTML = ''; // Clear existing options
+
     keys.forEach(key => {
         for (let index = 0; index < activeLayers[key].length; index++) {
             const element = activeLayers[key][index];
-            if(element['properties']['layer'].includes(val)&&featureList.length<5)featureList.push(element)
+            if (element.properties.layer.includes(val) && featureList.length < 5) {
+                featureList.push(element);
+            }
         }
-    }); 
-    if(featureList.length>0){
+    });
+
+    if (featureList.length > 0) {
         featureList.forEach(res => {
-            $('#datalistOptions').append(
-                `<option value="`+res['properties']['layer']+`">`
-            )
-        });     
+            const option = document.createElement('option');
+            option.value = res.properties.layer;
+            datalistOptions.appendChild(option);
+        });
     }
-})
+});
+
 function searchFeature(){
-    let val=$('#search-feature').val(),
+    let val=document.querySelector('#search-feature').value,
     keys=Object.keys(activeLayers)
     keys.forEach(key => {
         for (let index = 0; index < activeLayers[key].length; index++) {
@@ -302,9 +348,10 @@ map.on('load', async () => {
             'line-width': 4
         },
     })
-    $('#points-layer-check').on('change', ()=>{
-        if ($('#points-layer-check').prop('checked')) {
-            addLayer('conferences','symbol','points',[{
+    // Event listener for points-layer-check
+    document.querySelector('#points-layer-check').addEventListener('change', () => {
+        if (document.querySelector('#points-layer-check').checked) {
+            addLayer('conferences', 'symbol', 'points', [{
                 'icon-image': 'custom-marker',
                 'text-font': [
                     'Open Sans Semibold',
@@ -312,59 +359,67 @@ map.on('load', async () => {
                 ],
                 'text-offset': [0, 1.25],
                 'text-anchor': 'top'
-            },{}],'layer')
-            map.fitBounds(turf.bbox(map.getSource('points')._data))
-        }else{
-            if (map.getLayer('conferences')) map.removeLayer('conferences')
-            activeLayers['conferences']=[]
-        }
-   }) 
-   $('#lines-layer-check').on('change', ()=>{   
-        if ($('#lines-layer-check').prop('checked')) {
-            addLayer('lines','line','lines',[{
-                'line-join': 'round',
-                'line-cap': 'round'
-            },{
-                'line-color': linesType,
-                'line-width': 8
-            }],'layer')
-            map.fitBounds(turf.bbox(map.getSource('lines')._data))
-        }else{
-            if (map.getLayer('lines')) map.removeLayer('lines')
-            activeLayers['lines']=[]
-        }
-    })  
-    $('#areas-layer-check').on('change', ()=>{   
-        if ($('#areas-layer-check').prop('checked')) {
-            addLayer('areas','fill','areas',[{},{
-                'fill-color': areasType,
-                'fill-opacity': 0.8
-            }],'layer')
-            map.fitBounds(turf.bbox(map.getSource('areas')._data))
-        }else{
-            if (map.getLayer('areas')) map.removeLayer('areas')
-            activeLayers['areas']=[]
+            }, {}], 'layer');
+            map.fitBounds(turf.bbox(map.getSource('points')._data));
+        } else {
+            if (map.getLayer('conferences')) map.removeLayer('conferences');
+            activeLayers['conferences'] = [];
         }
     })
-    $('#all-layer-check').on('change', ()=>{   
-        if ($('#all-layer-check').prop('checked')) {
-            if (map.getLayer('areas')) map.removeLayer('areas')
-            addLayer('areas','fill','areas',[{},{
-                'fill-color': areasType,
-                'fill-opacity': 0.8
-            }],'layer')
-            $('#areas-layer-check').prop('checked', true)
-            if (map.getLayer('lines')) map.removeLayer('lines')
-            addLayer('lines','line','lines',[{
+
+    // Event listener for lines-layer-check
+    document.querySelector('#lines-layer-check').addEventListener('change', () => {
+        if (document.querySelector('#lines-layer-check').checked) {
+            addLayer('lines', 'line', 'lines', [{
                 'line-join': 'round',
                 'line-cap': 'round'
-            },{
+            }, {
                 'line-color': linesType,
                 'line-width': 8
-            }],'layer')
-            $('#lines-layer-check').prop('checked', true)
-            if (map.getLayer('conferences')) map.removeLayer('conferences')
-            addLayer('conferences','symbol','points',[{
+            }], 'layer');
+            map.fitBounds(turf.bbox(map.getSource('lines')._data));
+        } else {
+            if (map.getLayer('lines')) map.removeLayer('lines');
+            activeLayers['lines'] = [];
+        }
+    })
+
+    // Event listener for areas-layer-check
+    document.querySelector('#areas-layer-check').addEventListener('change', () => {
+        if (document.querySelector('#areas-layer-check').checked) {
+            addLayer('areas', 'fill', 'areas', [{}, {
+                'fill-color': areasType,
+                'fill-opacity': 0.8
+            }], 'layer');
+            map.fitBounds(turf.bbox(map.getSource('areas')._data));
+        } else {
+            if (map.getLayer('areas')) map.removeLayer('areas');
+            activeLayers['areas'] = [];
+        }
+    })
+
+    // Event listener for all-layer-check
+    document.querySelector('#all-layer-check').addEventListener('change', () => {
+        if (document.querySelector('#all-layer-check').checked) {
+            if (map.getLayer('areas')) map.removeLayer('areas');
+            addLayer('areas', 'fill', 'areas', [{}, {
+                'fill-color': areasType,
+                'fill-opacity': 0.8
+            }], 'layer');
+            document.querySelector('#areas-layer-check').checked = true;
+
+            if (map.getLayer('lines')) map.removeLayer('lines');
+            addLayer('lines', 'line', 'lines', [{
+                'line-join': 'round',
+                'line-cap': 'round'
+            }, {
+                'line-color': linesType,
+                'line-width': 8
+            }], 'layer');
+            document.querySelector('#lines-layer-check').checked = true;
+
+            if (map.getLayer('conferences')) map.removeLayer('conferences');
+            addLayer('conferences', 'symbol', 'points', [{
                 'icon-image': 'custom-marker',
                 'text-font': [
                     'Open Sans Semibold',
@@ -372,18 +427,21 @@ map.on('load', async () => {
                 ],
                 'text-offset': [0, 1.25],
                 'text-anchor': 'top'
-            },{}],'layer')
-            $('#points-layer-check').prop('checked', true)
-        }else{
-            if (map.getLayer('areas')) map.removeLayer('areas')
-            $('#areas-layer-check').prop('checked', false)
-            activeLayers['areas']=[]
-            if (map.getLayer('lines')) map.removeLayer('lines')
-            $('#lines-layer-check').prop('checked', false)
-            activeLayers['lines']=[]
-            if (map.getLayer('conferences')) map.removeLayer('conferences')
-            $('#points-layer-check').prop('checked', false)
-            activeLayers['conferences']=[]
+            }, {}], 'layer');
+            document.querySelector('#points-layer-check').checked = true;
+        } else {
+            if (map.getLayer('areas')) map.removeLayer('areas');
+            document.querySelector('#areas-layer-check').checked = false;
+            activeLayers['areas'] = [];
+
+            if (map.getLayer('lines')) map.removeLayer('lines');
+            document.querySelector('#lines-layer-check').checked = false;
+            activeLayers['lines'] = [];
+
+            if (map.getLayer('conferences')) map.removeLayer('conferences');
+            document.querySelector('#points-layer-check').checked = false;
+            activeLayers['conferences'] = [];
         }
-    }) 
+    })
+
 })

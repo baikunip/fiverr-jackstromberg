@@ -1,3 +1,18 @@
+Revisions:
+Also, found one more bug. Points are rendered under the polygons. They should be rendered above, so they have context to be clicked on instead of the polygon.  Sorry about all the messages, recapping into one. I think after this I should have everything I need. Thank you again for all the help on this!  
+JavaScript main.js I sent over an updated main.js file. 
+If possible, can we use that as our starting point since it eliminates the dependency on jquery? 
+Bugs: 
+1) Ensure points are above polygons and can be clicked on 
+2) Crosshair mouse style should revert after deleting a point or clearing a route  
+Changes: 
+1) For all layers, show labels all the time. 
+2) When clicking on linestrings and polygons, show the description box popup 
+3) For the Layer Controls, can you add an example of grouping items together? I.e. have 1 point, 1 linestring, and 1 polygon be part of Group 1; and 2 or 3 points part of Group 2; and the rest in Group 3? 
+4) Add a toggle to show / hide the "Map Title" menu -- I actually see this in the HTML, but the buttons are not displayed.
+5) Display the step-by-step directions (I see them in the array returned back by the navigation API)
+6) Can you add the map controls in for zoom as well? I forgot to include it in the main.js file I sent over.
+
 Requirements: 
 -Maps should leverage OpenStreetMap OK
 -Support loading of data via geoJSON  OK
