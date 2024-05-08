@@ -15,6 +15,7 @@ let map = new maplibregl.Map({
                     'maxzoom': 19
                 }
             },
+            "glyphs": "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
             'layers': [
                 {
                     'id': 'background',
@@ -65,8 +66,34 @@ function addLayer(layer,type,source,style,title){
         'layout': style[0],
         'paint':style[1]
     })
+    if(type!='symbol'){
+        let labelData=emptyjson
+        for (let index = 0; index < map.getSource(source)._data['features'].length; index++) {
+            const element = map.getSource(source)._data['features'][index];
+            let center=turf.centroid({
+                "type": "FeatureCollection",
+                "features": [element]
+            }),emptyFeature={"type": "Feature","properties":element['properties'],"geometry":center['geometry']}
+            labelData['features'].push(emptyFeature)
+        }
+        console.log(labelData)
+        map.getSource(source+'-label').setData(labelData)
+        map.addLayer({
+            'id': layer+'-label',
+            'type': 'symbol',
+            'source': source+'-label',
+            'layout': {
+                'text-font': ['Open Sans Bold'],
+                'text-field': ['get', title],
+                'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                'text-radial-offset': 0.5,
+                'text-justify': 'auto',
+                'text-offset': [0, 1.25],
+                'text-anchor': 'top'
+            }
+        })
+    }
     activeLayers[layer]=map.getSource(source)._data['features']
-    console.log(activeLayers)
     // console.log(map.getSource(source)._options.data['features'])
     // When a click event occurs on a feature in the places layer, open a popup at the
     // location of the feature, with description HTML from its properties.
@@ -94,6 +121,14 @@ function addLayer(layer,type,source,style,title){
     map.on('mouseleave', layer, () => {
         map.getCanvas().style.cursor = '';
     });
+}
+function removeLayer(layer,type,source){
+    map.removeLayer(layer);
+    activeLayers[layer] = [];
+    if(type!='symbol'){
+        map.getSource(source+'-label').setData(emptyjson)
+        map.removeLayer(layer+'-label')
+    } 
 }
 function drawPoint(source) {
     map.getCanvas().style.cursor = 'crosshair';
@@ -300,9 +335,17 @@ map.on('load', async () => {
         'type': 'geojson',
         'data': lines
     })
+    map.addSource('lines-label', {
+        'type': 'geojson',
+        'data': emptyjson
+    })
     map.addSource('areas', {
         'type': 'geojson',
         'data': areas
+    })
+    map.addSource('areas-label', {
+        'type': 'geojson',
+        'data': emptyjson
     })
     map.addSource('origin',{
         'type':'geojson',
@@ -353,17 +396,17 @@ map.on('load', async () => {
         if (document.querySelector('#points-layer-check').checked) {
             addLayer('conferences', 'symbol', 'points', [{
                 'icon-image': 'custom-marker',
-                'text-font': [
-                    'Open Sans Semibold',
-                    'Arial Unicode MS Bold'
-                ],
+                'text-font': ['Open Sans Bold'],
+                'text-field': ['get', 'layer'],
+                'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                'text-radial-offset': 0.5,
+                'text-justify': 'auto',
                 'text-offset': [0, 1.25],
                 'text-anchor': 'top'
             }, {}], 'layer');
             map.fitBounds(turf.bbox(map.getSource('points')._data));
         } else {
-            if (map.getLayer('conferences')) map.removeLayer('conferences');
-            activeLayers['conferences'] = [];
+            if (map.getLayer('conferences'))removeLayer('conferences','symbol','points')
         }
     })
 
@@ -379,8 +422,7 @@ map.on('load', async () => {
             }], 'layer');
             map.fitBounds(turf.bbox(map.getSource('lines')._data));
         } else {
-            if (map.getLayer('lines')) map.removeLayer('lines');
-            activeLayers['lines'] = [];
+            if (map.getLayer('lines')) removeLayer('lines', 'line', 'lines')
         }
     })
 
@@ -393,22 +435,20 @@ map.on('load', async () => {
             }], 'layer');
             map.fitBounds(turf.bbox(map.getSource('areas')._data));
         } else {
-            if (map.getLayer('areas')) map.removeLayer('areas');
-            activeLayers['areas'] = [];
+            if (map.getLayer('areas')) removeLayer('areas', 'fill', 'areas')
         }
     })
 
     // Event listener for all-layer-check
     document.querySelector('#all-layer-check').addEventListener('change', () => {
         if (document.querySelector('#all-layer-check').checked) {
-            if (map.getLayer('areas')) map.removeLayer('areas');
+            if (map.getLayer('areas')) removeLayer('areas', 'fill', 'areas');
             addLayer('areas', 'fill', 'areas', [{}, {
                 'fill-color': areasType,
                 'fill-opacity': 0.8
             }], 'layer');
             document.querySelector('#areas-layer-check').checked = true;
-
-            if (map.getLayer('lines')) map.removeLayer('lines');
+            if (map.getLayer('lines')) removeLayer('lines', 'line', 'lines')
             addLayer('lines', 'line', 'lines', [{
                 'line-join': 'round',
                 'line-cap': 'round'
@@ -417,28 +457,28 @@ map.on('load', async () => {
                 'line-width': 8
             }], 'layer');
             document.querySelector('#lines-layer-check').checked = true;
-
-            if (map.getLayer('conferences')) map.removeLayer('conferences');
+            if (map.getLayer('conferences')) removeLayer('conferences', 'symbol', 'points');
             addLayer('conferences', 'symbol', 'points', [{
                 'icon-image': 'custom-marker',
-                'text-font': [
-                    'Open Sans Semibold',
-                    'Arial Unicode MS Bold'
-                ],
+                'text-font': ['Open Sans Bold'],
+                'text-field': ['get', 'layer'],
+                'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+                'text-radial-offset': 0.5,
+                'text-justify': 'auto',
                 'text-offset': [0, 1.25],
                 'text-anchor': 'top'
             }, {}], 'layer');
             document.querySelector('#points-layer-check').checked = true;
         } else {
-            if (map.getLayer('areas')) map.removeLayer('areas');
+            if (map.getLayer('areas')) removeLayer('areas', 'fill', 'areas');
             document.querySelector('#areas-layer-check').checked = false;
             activeLayers['areas'] = [];
 
-            if (map.getLayer('lines')) map.removeLayer('lines');
+            if (map.getLayer('lines')) removeLayer('lines', 'line', 'lines');
             document.querySelector('#lines-layer-check').checked = false;
             activeLayers['lines'] = [];
 
-            if (map.getLayer('conferences')) map.removeLayer('conferences');
+            if (map.getLayer('conferences')) removeLayer('conferences', 'symbol', 'points')
             document.querySelector('#points-layer-check').checked = false;
             activeLayers['conferences'] = [];
         }
