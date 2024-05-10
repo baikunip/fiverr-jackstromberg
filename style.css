@@ -35,5 +35,8 @@
     #side-bar{
         height:50vh;
     }
+    #show-side-bar{
+        top:12.8em;
+    }
 }
 
