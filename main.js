@@ -133,12 +133,9 @@ function removeLayer(layer,type,source){
 function checkGroup(group){
     if(document.getElementById('group-'+group).checked){
         activeGroup.push(group)
-        console.log('checked')
     }else{
         if(activeGroup.includes(group))activeGroup.splice(activeGroup.indexOf(group), 1)
-        console.log('unchecked')
     }
-    console.log(activeGroup)
     const newPoints={"type": "FeatureCollection","features": []},
     newLines={"type": "FeatureCollection","features": []},lineLabel={"type": "FeatureCollection","features": []},
     newAreas={"type": "FeatureCollection","features": []},areaLabel={"type": "FeatureCollection","features": []}
