@@ -392,7 +392,7 @@ function searchFeature(){
 }
 map.on('load', async () => {
     // Add an image to use as a custom marker
-    const image = await map.loadImage('https://maplibre.org/maplibre-gl-js/docs/assets/osgeo-logo.png');
+    const image = await map.loadImage('./img/points.png');
     map.addImage('custom-marker', image.data);
     // sources
     map.addSource('points', {
