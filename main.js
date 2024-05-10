@@ -15,7 +15,7 @@ let map = new maplibregl.Map({
                     'maxzoom': 19
                 }
             },
-            "glyphs": "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
+            "glyphs": "https://fonts.openmaptiles.org/{fontstack}/{range}.pbf",
             'layers': [
                 {
                     'id': 'background',
