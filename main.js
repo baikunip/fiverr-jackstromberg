@@ -270,14 +270,28 @@ map.addControl(
     })
 )
 function showSideBar() {
-    document.getElementById('map').style.height = '50vh';
-    document.getElementById('side-bar').style.height = '50vh';
+    if(window.innerWidth>768){
+        document.getElementById("map-container").classList.remove("col-md-12")
+        document.getElementById("map-container").classList.add("col-md-9")
+        document.getElementById('side-bar').classList.add("col-md-3")
+    }else{
+        document.getElementById('map').style.height = '50vh';
+        document.getElementById('side-bar').style.height = '50vh';
+    }
+    document.getElementById('side-bar').classList.remove("d-none")
     document.getElementById('show-side-bar').style.display = 'none';
 }
 
 function hideSideBar() {
-    document.getElementById('map').style.height = '100vh';
-    document.getElementById('side-bar').style.height = '0vh';
+    if(window.innerWidth>768){
+        document.getElementById("map-container").classList.add("col-md-12")
+        document.getElementById("map-container").classList.remove("col-md-9")
+        document.getElementById('side-bar').classList.remove("col-md-3")
+    }else{
+        document.getElementById('map').style.height = '100vh';
+        document.getElementById('side-bar').style.height = '0vh';
+    }
+    document.getElementById('side-bar').classList.add("d-none")
     document.getElementById('show-side-bar').style.display = 'block';
 }
 
