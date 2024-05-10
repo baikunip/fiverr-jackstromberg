@@ -76,7 +76,6 @@ function addLayer(layer,type,source,style,title){
             }),emptyFeature={"type": "Feature","properties":element['properties'],"geometry":center['geometry']}
             labelData['features'].push(emptyFeature)
         }
-        console.log(labelData)
         map.getSource(source+'-label').setData(labelData)
         map.addLayer({
             'id': layer+'-label',
@@ -98,8 +97,10 @@ function addLayer(layer,type,source,style,title){
     // When a click event occurs on a feature in the places layer, open a popup at the
     // location of the feature, with description HTML from its properties.
     map.on('click', layer, (e) => {
-        const coordinates = e.features[0].geometry.coordinates.slice();
-        const description = e.features[0].properties[title];
+        let coordinates,description = e.features[0].properties[title];
+        if(e.features[0].geometry.type=="Polygon")coordinates=turf.centroid({"type": "FeatureCollection","features": [e.features[0]]}).geometry.coordinates.slice()
+        else if(e.features[0].geometry.type=="LineString")coordinates=turf.pointOnFeature({"type": "FeatureCollection","features": [e.features[0]]}).geometry.coordinates.slice()
+        else coordinates = e.features[0].geometry.coordinates.slice();
 
         // Ensure that if the map is zoomed out such that multiple
         // copies of the feature are visible, the popup appears
@@ -132,7 +133,6 @@ function removeLayer(layer,type,source){
 }
 function drawPoint(source) {
     map.getCanvas().style.cursor = 'crosshair';
-
     const clickHandler = (e) => {
         const coord = e.lngLat;
         map.getSource(source).setData({
@@ -157,9 +157,8 @@ function drawPoint(source) {
 }
 
 function clearPoint(source) {
+    map.getCanvas().style.cursor = 'default';
     map.getSource(source).setData(emptyjson);
-    map.getCanvas().style.cursor = 'hand';
-
     const drawContainer = document.querySelector('#draw-container-' + source);
     drawContainer.innerHTML = '';
     const activateButton = document.createElement('button');
