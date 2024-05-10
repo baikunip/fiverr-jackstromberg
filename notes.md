@@ -10,8 +10,8 @@ Changes:
 2) When clicking on linestrings and polygons, show the description box popup OK
 3) For the Layer Controls, can you add an example of grouping items together? I.e. have 1 point, 1 linestring, and 1 polygon be part of Group 1; and 2 or 3 points part of Group 2; and the rest in Group 3? OK
 4) Add a toggle to show / hide the "Map Title" menu -- I actually see this in the HTML, but the buttons are not displayed. OK
-5) Display the step-by-step directions (I see them in the array returned back by the navigation API)
-6) Can you add the map controls in for zoom as well? I forgot to include it in the main.js file I sent over.
+5) Display the step-by-step directions (I see them in the array returned back by the navigation API) OK
+6) Can you add the map controls in for zoom as well? I forgot to include it in the main.js file I sent over. OK
 
 Requirements: 
 -Maps should leverage OpenStreetMap OK

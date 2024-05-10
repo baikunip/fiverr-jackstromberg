@@ -8,7 +8,7 @@
 }
 #close-side-bar{
     margin:2px;
-   float:right;
+    float:right;
 }
 /* #show-side-bar{display:none;}
 #close-side-bar-container{display:none} */
@@ -16,7 +16,7 @@
     display:block;
     position:absolute;
     z-index:9;
-    top:6.4em;
+    top:12em;
     right:.5em;
     background-color: rgb(244, 244, 244);
     width:33px;
@@ -26,8 +26,14 @@
     border-width: 2px;
     border-color: rgba(155, 155, 155, 0.5);
 }
+#side-bar{
+    height:100vh;
+    overflow-y: scroll;
+}
 /* #close-side-bar-container{display:block} */
 @media only screen and (max-width : 768px){
-    
+    #side-bar{
+        height:50vh;
+    }
 }
 

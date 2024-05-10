@@ -35,7 +35,6 @@ let map = new maplibregl.Map({
             46.41032845779952], // starting position [lng, lat]
         zoom: 14 // starting zoom
     });
-
 let areasType=['match',["get", "layer"]],linesType=['match',["get", "layer"]]
 emptyjson={
     "type": "FeatureCollection",
@@ -220,7 +219,6 @@ function showRoute() {
     const org = document.querySelector('#coordinate-origin').value;
     const dest = document.querySelector('#coordinate-destination').value.split(', ');
     const travelmode = document.querySelector('#travel-mode').value;
-
     fetch(`https://api.openrouteservice.org/v2/directions/${travelmode}?api_key=5b3ce3597851110001cf6248ba6a3408925f461ba2991a96af959ec0&start=${org}&end=${dest.join(',')}`)
         .then(response => {
             if (!response.ok) {
@@ -229,16 +227,26 @@ function showRoute() {
             return response.json();
         })
         .then(data => {
-            map.getSource('routes').setData(data);
-            map.fitBounds(turf.bbox(map.getSource('routes')._data));
-            const routingContainer = document.querySelector('#routing-container');
-            routingContainer.innerHTML = '';
-            const clearButton = document.createElement('button');
-            clearButton.type = 'button';
-            clearButton.className = 'btn btn-block btn-danger';
-            clearButton.textContent = 'Clear Direction';
+            console.log(data.features[0].properties.segments[0].steps)
+            map.getSource('routes').setData(data)
+            map.fitBounds(turf.bbox(map.getSource('routes')._data))
+            const routingContainer = document.querySelector('#routing-container'),
+            instructionContainer=document.querySelector('#instruction-container')
+            instructionContainer.innerHTML=''
+            routingContainer.innerHTML = ''
+            const clearButton = document.createElement('button')
+            clearButton.type = 'button'
+            clearButton.className = 'btn btn-block btn-danger'
+            clearButton.textContent = 'Clear Direction'
             clearButton.onclick = clearRoute;
-            routingContainer.appendChild(clearButton);
+            routingContainer.appendChild(clearButton)
+            for (let index = 0; index < data.features[0].properties.segments[0].steps.length; index++) {
+                const element = data.features[0].properties.segments[0].steps[index],
+                instruction=document.createElement('li')
+                instruction.className='list-group-item'
+                instruction.appendChild(document.createTextNode(element.instruction))
+                instructionContainer.appendChild(instruction)
+            }
         })
         .catch(error => {
             console.error('Error fetching route data:', error);
@@ -249,7 +257,6 @@ function showRoute() {
 
 function clearRoute() {
     map.getSource('routes').setData({"type": "FeatureCollection","features": []});
-
     const routingContainer = document.querySelector('#routing-container');
     routingContainer.innerHTML = '';
     const getDirectionButton = document.createElement('button');
@@ -258,6 +265,12 @@ function clearRoute() {
     getDirectionButton.innerHTML = 'Get Direction';
     getDirectionButton.onclick = showRoute;
     routingContainer.appendChild(getDirectionButton);
+    const instructionContainer=document.querySelector('#instruction-container')
+    let instruction=document.createElement('li')
+    instruction.className='list-group-item'
+    instruction.appendChild(document.createTextNode('Please get direction first!'))
+    instructionContainer.innerHTML=''
+    instructionContainer.appendChild(instruction)
 }
 
 const geocoderApi = {
@@ -305,6 +318,7 @@ map.addControl(
         maplibregl
     })
 );
+map.addControl(new maplibregl.NavigationControl());
 map.addControl(
     new maplibregl.GeolocateControl({
         positionOptions: {

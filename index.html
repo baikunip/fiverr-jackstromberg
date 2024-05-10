@@ -17,7 +17,7 @@
 </head>
 <body>
     <div class="row no-gutters">
-        <div id="map-container" class="col-md-12" style="padding:0;">
+        <div id="map-container" class="col-md-12">
             <div id="map">
               <button class="btn" type="button" id="show-side-bar" onclick="showSideBar()">
                 <i class="bi bi-list"></i>
@@ -126,6 +126,9 @@
               </h2>
               <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                 <div class="accordion-body">
+                  <label class="form-check-label">
+                    Get Directions
+                  </label>
                   <form>
                     <div class="mb-3">
                       <label for="exampleInputEmail1" class="form-label">Origin</label>
@@ -171,6 +174,13 @@
                       <button type="button" class="btn btn-block btn-primary" onclick="showRoute()">Get Direction</button>
                     </div>
                   </form>
+                  <hr>
+                  <label class="form-check-label">
+                    Instructions
+                  </label>
+                    <ul class="list-group container" id="instruction-container">
+                      <li class="list-group-item">Please get direction first!</li>
+                    </ul>
                 </div>
               </div>
             </div>
