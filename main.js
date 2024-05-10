@@ -41,7 +41,7 @@ emptyjson={
     "type": "FeatureCollection",
     "features": []
 },
-activeLayers={},
+activeLayers={},activeGroup=['A','B','C','D'],
 featureList=[]
 areas.features.forEach(element => {
     if(!areasType.includes(element['properties']['layer'])){
@@ -67,7 +67,7 @@ function addLayer(layer,type,source,style,title){
         'paint':style[1]
     })
     if(type!='symbol'){
-        let labelData=emptyjson
+        let labelData={"type": "FeatureCollection","features": []}
         for (let index = 0; index < map.getSource(source)._data['features'].length; index++) {
             const element = map.getSource(source)._data['features'][index];
             let center=turf.centroid({
@@ -127,9 +127,53 @@ function removeLayer(layer,type,source){
     map.removeLayer(layer);
     activeLayers[layer] = [];
     if(type!='symbol'){
-        map.getSource(source+'-label').setData(emptyjson)
+        map.getSource(source+'-label').setData({"type": "FeatureCollection","features": []})
         map.removeLayer(layer+'-label')
     } 
+}
+function checkGroup(group){
+    if(document.getElementById('group-'+group).checked){
+        activeGroup.push(group)
+        console.log('checked')
+    }else{
+        if(activeGroup.includes(group))activeGroup.splice(activeGroup.indexOf(group), 1)
+        console.log('unchecked')
+    }
+    console.log(activeGroup)
+    const newPoints={"type": "FeatureCollection","features": []},
+    newLines={"type": "FeatureCollection","features": []},lineLabel={"type": "FeatureCollection","features": []},
+    newAreas={"type": "FeatureCollection","features": []},areaLabel={"type": "FeatureCollection","features": []}
+    for (let idxPoint = 0; idxPoint < points['features'].length; idxPoint++) {
+        const pt = points['features'][idxPoint]
+        if(activeGroup.includes(pt['properties']['group']))newPoints['features'].push(pt)
+    }
+    map.getSource('points').setData(newPoints)
+    for (let idxLine = 0; idxLine < lines['features'].length; idxLine++) {
+        const ln = lines['features'][idxLine]
+        if(activeGroup.includes(ln['properties']['group'])){
+            newLines['features'].push(ln)
+            let center=turf.centroid({
+                "type": "FeatureCollection",
+                "features": [ln]
+            }),emptyFeature={"type": "Feature","properties":ln['properties'],"geometry":center['geometry']}
+            lineLabel['features'].push(emptyFeature)
+        }
+    }
+    map.getSource('lines').setData(newLines)
+    map.getSource('lines-label').setData(lineLabel)
+    for (let idxArea = 0; idxArea < areas['features'].length; idxArea++) {
+        const ar = areas['features'][idxArea]
+        if(activeGroup.includes(ar['properties']['group'])){
+            newAreas['features'].push(ar)
+            let centerA=turf.centroid({
+                "type": "FeatureCollection",
+                "features": [ar]
+            }),emptyFeatureA={"type": "Feature","properties":ar['properties'],"geometry":centerA['geometry']}
+            areaLabel['features'].push(emptyFeatureA)
+        }
+    }
+    map.getSource('areas').setData(newAreas)
+    map.getSource('areas-label').setData(areaLabel)
 }
 function drawPoint(source) {
     map.getCanvas().style.cursor = 'crosshair';
@@ -158,7 +202,7 @@ function drawPoint(source) {
 
 function clearPoint(source) {
     map.getCanvas().style.cursor = 'default';
-    map.getSource(source).setData(emptyjson);
+    map.getSource(source).setData({"type": "FeatureCollection","features": []});
     const drawContainer = document.querySelector('#draw-container-' + source);
     drawContainer.innerHTML = '';
     const activateButton = document.createElement('button');
@@ -198,13 +242,13 @@ function showRoute() {
         })
         .catch(error => {
             console.error('Error fetching route data:', error);
-            map.getSource('routes').setData(emptyjson);
+            map.getSource('routes').setData({"type": "FeatureCollection","features": []});
         });
 }
 
 
 function clearRoute() {
-    map.getSource('routes').setData(emptyjson);
+    map.getSource('routes').setData({"type": "FeatureCollection","features": []});
 
     const routingContainer = document.querySelector('#routing-container');
     routingContainer.innerHTML = '';
@@ -328,7 +372,7 @@ function searchFeature(){
         for (let index = 0; index < activeLayers[key].length; index++) {
             const element = activeLayers[key][index];
             if(element['properties']['layer']==val){
-                let searchedFeature=emptyjson
+                let searchedFeature={"type": "FeatureCollection","features": []}
                 searchedFeature['features'].push(element)
                 map.fitBounds(turf.bbox(searchedFeature))
             }
@@ -350,7 +394,7 @@ map.on('load', async () => {
     })
     map.addSource('lines-label', {
         'type': 'geojson',
-        'data': emptyjson
+        'data': {"type": "FeatureCollection","features": []}
     })
     map.addSource('areas', {
         'type': 'geojson',
@@ -358,19 +402,19 @@ map.on('load', async () => {
     })
     map.addSource('areas-label', {
         'type': 'geojson',
-        'data': emptyjson
+        'data': {"type": "FeatureCollection","features": []}
     })
     map.addSource('origin',{
         'type':'geojson',
-        'data':emptyjson
+        'data':{"type": "FeatureCollection","features": []}
     })
     map.addSource('destination',{
         'type':'geojson',
-        'data':emptyjson
+        'data':{"type": "FeatureCollection","features": []}
     })
     map.addSource('routes',{
         'type':'geojson',
-        'data':emptyjson
+        'data':{"type": "FeatureCollection","features": []}
     })
     // layers
     map.addLayer({
